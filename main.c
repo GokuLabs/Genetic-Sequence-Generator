@@ -75,12 +75,9 @@ int main(int argc, char const *argv[])
 {
 	if (argc > 1 && !strcmp(argv[1],"-s")) {
 		srand (time(NULL));
-		const char *geneticTags[4] = {
-			"G",
-			"T",
-			"C",
-			"A"
-		};
+		const char *geneticTags[2] = {
+            "AT","GC"
+        };
 		const char *geneticArray[1024];
 		int count = 0;
     	char *filename = getname("generation_", ".txt");
@@ -89,7 +86,7 @@ int main(int argc, char const *argv[])
 		printf("Starting generation...\n");
 		while (count < 170000000){
 			count++;
-			int n = rand()%4;
+			int n = rand()%2;
 			loadBar(count,170000000,100,100);
 			fprintf(file,"%s", geneticTags[n]);
 		}
