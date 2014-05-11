@@ -25,7 +25,7 @@ char* currdatetime()
     }
 
     struct tm  *timeinfo = localtime (&currDateTime);
-    if(strftime(cdt, 20, "%d.%m.%y", timeinfo) == 0)
+    if(strftime(cdt, 20, "%d_%m_%y_%H_%M", timeinfo) == 0)
     {
         return NULL;
     }
@@ -80,22 +80,31 @@ int main(int argc, char const *argv[])
         };
 		const char *geneticArray[1024];
 		int count = 0;
-    	char *filename = getname("generation_", ".txt");
+        int charCount = 0;
+
+    	char *filename = getname("generation_", ".fasta");
 		FILE *file; 
 		file = fopen(filename,"a+");
+        fprintf(file,">AB000263 ");
 		printf("Starting generation...\n");
-		while (count < 170000000){
+		while (count < 100000){
 			count++;
-			int n = rand()%2;
-			loadBar(count,170000000,100,100);
-			fprintf(file,"%s", geneticTags[n]);
+            while (charCount < 25){
+                charCount++;
+                int n = rand()%2;
+                fprintf(file,"%s", geneticTags[n]);
+            }
+			fprintf(file, "\n");
+            charCount = 0;
+			loadBar(count,100000,100,100);
 		}
+        fprintf(file, "1");
 		printf("Done. File written as %s\n", filename);
 		fclose(file);
 		return 0;
 	}else {
 		printf("Genetic Sequence Generator\n");	
-		printf("Prints out 170,000,000 random combinations of the four main base pairs (A,T,C,G)\n");
+		printf("Prints out 100,000 random combinations of the four main base pairs (A,T,C,G)\n");
 		printf("Arguments;\n");
 		//printf("-o	Output directory (Defaults to working directory)\n"); TODO
 		printf("-s	Start generation (Writes to file in working directory\n");

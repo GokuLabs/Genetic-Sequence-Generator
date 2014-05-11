@@ -3,5 +3,5 @@ all:
 	gcc $(SOURCE_FILES) -o gsg
 
 clean:
-	rm *.txt
+	rm *.fasta
 	rm ./gsg
