@@ -3,7 +3,12 @@
 #include <time.h>
 #include <termios.h>
 #include <string.h>
+#include <getopt.h>
 
+typedef enum { false, true } bool;
+#ifndef DEBUG
+#define DEBUG 0
+#endif
 char* currdatetime()
 {
     const int size = 20;
@@ -70,45 +75,84 @@ static inline void loadBar(int x, int n, int r, int w)
        printf(" ");
     printf("]\n\033[F\033[J");
 }
-
-int main(int argc, char const *argv[])
-{
-	if (argc > 1 && !strcmp(argv[1],"-s")) {
-		srand (time(NULL));
-		const char *geneticTags[2] = {
+void startBuildingFile(int customNumberToGen, bool customNumber){
+    srand (time(NULL));
+        const char *geneticTags[2] = {
             "AT","GC"
         };
-		const char *geneticArray[1024];
-		int count = 0;
+        const char *geneticArray[1024];
+        int count = 0;
+        int numberToGen = 100000;
         int charCount = 0;
 
-    	char *filename = getname("generation_", ".fasta");
-		FILE *file; 
-		file = fopen(filename,"a+");
-        fprintf(file,">AB000263 ");
-		printf("Starting generation...\n");
-		while (count < 100000){
-			count++;
+        char *filename = getname("generation_", ".fasta");
+        FILE *file; 
+        file = fopen(filename,"w+");
+        
+        fprintf(file,">AB000263\n");
+        printf("Starting generation...\n");
+
+        if(DEBUG)printf("customNumber:%i customBoolean:%i\n",customNumberToGen,customNumber );
+        if (customNumber == true)
+        {
+            numberToGen = customNumberToGen;
+        }
+        printf("Generating %i combinations\n", numberToGen);
+        while (count < numberToGen){
+            count++;
             while (charCount < 25){
                 charCount++;
                 int n = rand()%2;
                 fprintf(file,"%s", geneticTags[n]);
             }
-			fprintf(file, "\n");
+            fprintf(file, "\n");
             charCount = 0;
-			loadBar(count,100000,100,100);
-		}
+            loadBar(count,numberToGen,100,100);
+        }
         fprintf(file, "1");
-		printf("Done. File written as %s\n", filename);
-		fclose(file);
-		return 0;
-	}else {
-		printf("Genetic Sequence Generator\n");	
-		printf("Prints out 100,000 random combinations of the four main base pairs (A,T,C,G)\n");
-		printf("Arguments;\n");
-		//printf("-o	Output directory (Defaults to working directory)\n"); TODO
-		printf("-s	Start generation (Writes to file in working directory\n");
-		printf("Example: ./gsg -s\n");
-		return 0;
-	}	
+        printf("Done. File written as %s\n", filename);
+        fclose(file);
+}
+int main(int argc, char const *argv[])
+{
+
+    int opt;
+    clock_t t;
+    while((opt = getopt(argc, argv, "s:l:")) != -1) {
+        switch (opt){
+          case 's':
+            startBuildingFile(0,false);
+            break;
+
+          case 'l':
+            t = clock();
+            startBuildingFile(atoi(optarg),true);
+            t = clock() - t;
+            double time_taken = ((double)t)/CLOCKS_PER_SEC;
+            double minutes = ((double)t)/CLOCKS_PER_SEC / 60.0;
+
+            if (time_taken > 60.0)
+            {
+                if (minutes > 60.0)
+                {
+                    printf("Wrote file in: %.2f hours\n", (time_taken / 60.0));
+                }else {
+                    printf("Wrote file in: %.2f minutes\n", (time_taken / 60.0));
+                }
+            }else if (time_taken < 60){
+                printf("Wrote file in: %.2f seconds\n", time_taken);
+            }
+            break;
+
+          default:
+            printf("Genetic Sequence Generator\n");   
+            printf("Prints out 100,000 random combinations of the four main base pairs (A,T,C,G)\n");
+            printf("Writes to file in working directory\n");
+            printf("Arguments;\n");
+            printf("-s  Start generation with default number of combinations; 100,000\n");
+            printf("-l  Start generation with a custom number of generations\n");
+            printf("Example: ./gsg -s or ./gsg -l 18000\n");
+        }
+    }
+    return 0;
 }
